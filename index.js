@@ -49,15 +49,14 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							return bot.replyMessage(event.replyToken, echo);
 						} else if (/^購入/.test(text)) {
 							console.log(`購入処理`);
-							const splitedText = text.split(`　`);
-							console.log(`[splitedText]` + splitedText);
-
+							const itemNumber = text.match(/\d{1,2}/)[0];
+							console.log(`[itemNumber]` + itemNumber);
 							const message = {
 								type: "template",
-								altText: `${splitedText[-1]}版を購入しますか?\nhoge円になります`,
+								altText: `${itemNumber}番を購入しますか?\nhoge円になります`,
 								template: {
 									type: "confirm",
-									text: `${splitedText[-1]}版を購入しますか?\nhoge円になります`,
+									text: `${itemNumber}番を購入しますか?\nhoge円になります`,
 									actions: [
 										{type: "postback", label: "Yes", data: "yes"},
 										{type: "postback", label: "No Thanks", data: "no"}
