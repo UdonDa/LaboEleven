@@ -41,6 +41,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					console.log(event.message);
 					const text = event.message.text;
 					switch (text) {
+
 						case "一覧":
 							console.log(`TODO: 一覧表示`);
 							const echo = {
@@ -59,6 +60,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							break;
 						default:
 							console.log(`普通に買えって返す`);
+							console.log(`[/^購入/.test(text)] ${/^購入/.test(text)}`);
+
 							break;
 					}
 					break;
