@@ -29,13 +29,15 @@ const ITEM_TABLE = {
 	2: 160,//飲み物
 	3: 500,//弁当
 	4: 220,//エナジードリンク
+	5: 150,//アイス
 };
 
 const ITEM_NAME_TABLE = {
 	1: 'おにぎり',
 	2: '飲み物',
 	3: '弁当',
-	4: 'エナジードリンク'
+	4: 'エナジードリンク',
+	5: 'アイス'
 };
 
 server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
@@ -78,24 +80,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					break;
 			}
 
-			// No thanks押し忘れた時用
-			// const message = {
-			// 	type: "template",
-			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
-			// 	template: {
-			// 		type: "confirm",
-			// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
-			// 		actions: [
-			// 			{type: "postback", label: "Yes", data: "yes"},
-			// 			{type: "postback", label: "No Thanks", data: "no"}
-			// 		]
-			// 	}
-			// };
-			// return bot.replyMessage(event.replyToken, message).then((response) => {
-			// 	cache.put(event.source.userId, {
-			// 		subscription: "inactive"
-			// 	});
-			// });
+
 		} else if (context.subscription === "inactive") {
 			if (event.type === "postback") {
 				if (event.postback.data === "yes") {
