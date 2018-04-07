@@ -89,15 +89,15 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						});
 
 					} else {
-						console.log(`普通に買えって返す`);
+						const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
+						return bot.replyMessage(event.replyToken, message);
 					}
 					break;
 				default:
-					console.log(`普通に買えって返す(text以外がきたよーん)`);
+					const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
+					return bot.replyMessage(event.replyToken, message);
 					break;
 			}
-
-
 		} else if (context.subscription === "inactive") {
 			if (event.type === "postback") {
 				if (event.postback.data === "yes") {
