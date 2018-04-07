@@ -106,7 +106,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						reservation.transactionId = response.info.transactionId;
 						reservation.userId = event.source.userId;
 						cache.put(reservation.transactionId, reservation);
-						const text = 'LINE Payでお支払いよろしくおねがしいます';
+						const text = 'LINE Payでお支払いお願いします';
 						const message = getButtonsText(text, response.info.paymentUrl.web);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
 							setSubscription(event.source.userId, "active")
