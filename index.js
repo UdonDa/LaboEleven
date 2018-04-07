@@ -43,6 +43,11 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					switch (text) {
 						case "一覧":
 							console.log(`TODO: 一覧表示`);
+							const echo = {
+								type: 'text',
+								text: 'ls'
+							};
+							return bot.replyMessage(event.replyToken, echo);
 							break;
 						case text.indexOf('購入') !== -1:
 							console.log(`購入処理`);
@@ -56,22 +61,22 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					}
 					break;
 				default:
-					console.log(`普通に買えって返す`);
+					console.log(`普通に買えって返す(text以外がきたよーん)`);
 					break;
 			}
-			//
-			// let message = {
-			// 	type: "template",
-			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
-			// 	template: {
-			// 		type: "confirm",
-			// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
-			// 		actions: [
-			// 			{type: "postback", label: "Yes", data: "yes"},
-			// 			{type: "postback", label: "No Thanks", data: "no"}
-			// 		]
-			// 	}
-			// };
+
+			let message = {
+				type: "template",
+				altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
+				template: {
+					type: "confirm",
+					text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
+					actions: [
+						{type: "postback", label: "Yes", data: "yes"},
+						{type: "postback", label: "No Thanks", data: "no"}
+					]
+				}
+			};
 			return bot.replyMessage(event.replyToken, message).then((response) => {
 				cache.put(event.source.userId, {
 					subscription: "inactive"
