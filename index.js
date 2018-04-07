@@ -35,37 +35,37 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 		if (!context){
 
 			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
-			switch (event.message.type) {
-				case "text":
-					console.log(`[Start]event.message.type === text`);
-					console.log(event.message);
-					const text = event.message.text;
-					switch (text) {
-						case "一覧":
-							console.log(`TODO: 一覧表示`);
-							const echo = {
-								type: 'text',
-								text: 'ls'
-							};
-							return bot.replyMessage(event.replyToken, echo);
-							break;
-						case text.match(/購入/):
-							console.log(`購入処理`);
-							const splitedText = text.split(`　`);
-							console.log(splitedText);
-							break;
-						case text.match(/登録/):
-							console.log(`登録処理`);
-							break;
-						default:
-							console.log(`普通に買えって返す`);
-							break;
-					}
-					break;
-				default:
-					console.log(`普通に買えって返す(text以外がきたよーん)`);
-					break;
-			}
+			// switch (event.message.type) {
+			// 	case "text":
+			// 		console.log(`[Start]event.message.type === text`);
+			// 		console.log(event.message);
+			// 		const text = event.message.text;
+			// 		switch (text) {
+			// 			case "一覧":
+			// 				console.log(`TODO: 一覧表示`);
+			// 				const echo = {
+			// 					type: 'text',
+			// 					text: 'ls'
+			// 				};
+			// 				return bot.replyMessage(event.replyToken, echo);
+			// 				break;
+			// 			case text.match(/購入/):
+			// 				console.log(`購入処理`);
+			// 				const splitedText = text.split(`　`);
+			// 				console.log(splitedText);
+			// 				break;
+			// 			case text.match(/登録/):
+			// 				console.log(`登録処理`);
+			// 				break;
+			// 			default:
+			// 				console.log(`普通に買えって返す`);
+			// 				break;
+			// 		}
+			// 		break;
+			// 	default:
+			// 		console.log(`普通に買えって返す(text以外がきたよーん)`);
+			// 		break;
+			// }
 
 			let message = {
 				type: "template",
