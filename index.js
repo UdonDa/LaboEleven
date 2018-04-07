@@ -107,6 +107,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						reservation.userId = event.source.userId;
 						cache.put(reservation.transactionId, reservation);
 						const text = 'LINE Payでお支払いお願いします';
+						const textForLogs = `ID:${event.source.userId} WHEN:${getTodayTimestamp()} ITEM_ID:${ITEM_NUMBER}\n`;
+						fs.appendFileSync('logs_bought.txt', textForLogs, 'utf8');
 						const message = getButtonsText(text, response.info.paymentUrl.web);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
 							setSubscription(event.source.userId, "active")
@@ -124,7 +126,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 				} else if (event.postback.data === "yes_enroll") {
 					const text = "ご登録ありがとうございます";
 					const textForLogs = `ID:${event.source.userId} WHEN:${getTodayTimestamp()} ITEM_ID:${ITEM_NUMBER}\n`;
-					fs.appendFileSync('logs.txt', textForLogs, 'utf8');
+					fs.appendFileSync('logs_enrolled.txt', textForLogs, 'utf8');
 					const message = getTextMessage(text);
 					return bot.replyMessage(event.replyToken, message).then((response) => {
 						cache.del(event.source.userId);
@@ -162,7 +164,6 @@ server.get("/pay/confirm", (req, res, next) => {
 	};
 	return pay.confirm(confirmation).then((response) => {
 		res.sendStatus(200);
-
 		const messages = [{
 			type: "sticker",
 			packageId: 2,
