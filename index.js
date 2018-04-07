@@ -5,7 +5,7 @@ const server = require("express")();
 const cache = require("memory-cache");
 const path = require("path");
 const session = require("express-session");
-
+server.set('trust proxy', 1);
 //Line Pay API
 const linePay = require("line-pay");
 const pay = new linePay({
@@ -14,6 +14,12 @@ const pay = new linePay({
 	//hostname: process.env.LINE_PAY_HOSTNAME,
 	hostname: process.env.QUOTAGUARDSTATIC_URL,
 	isSandbox: true,
+	sessionOptions: {
+		secret: 'keyboard cat',
+		resave: false,
+		saveUninitialized: true,
+		cookie: { secure: true }
+	}
 });
 
 //line bot
