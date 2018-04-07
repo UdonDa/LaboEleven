@@ -26,6 +26,22 @@ server.listen(process.env.PORT || 5000);
 
 var ITEM_NUMBER = 0;
 
+const ITEM_TABLE = {
+	1: 150,//おにぎり
+	2: 160,//飲み物
+	3: 500,//弁当
+	4: 220,//エナジードリンク
+};
+
+const ITEM_NAME_TABLE = {
+	1: 'おにぎり',
+	2: '飲み物',
+	3: '弁当',
+	4: 'エナジードリンク'
+};
+
+
+
 server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 	console.log(`[ITEM_NUMBER] ${ITEM_NUMBER}`);
 	if (!Array.isArray(req.body.events)) {
@@ -105,8 +121,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 			if (event.type === "postback"){
 				if (event.postback.data === "yes"){
 					let reservation = {
-						productName: "My product",
-						amount: 1,
+						productName: ITEM_NAME_TABLE[ITEM_NUMBER.toString()],
+						amount: ITEM_TABLE[ITEM_NUMBER.toString()],
 						currency: "JPY",
 						confirmUrl: process.env.LINE_PAY_CONFIRM_URL || `https://${req.hostname}/pay/confirm`,
 						confirmUrlType: "SERVER",
