@@ -51,6 +51,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 	res.sendStatus(200);
 	req.body.events.map((event) => {
 		let context = cache.get(event.source.userId);
+		console.log(context);
 
 		if (!context){
 
@@ -150,9 +151,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						// Now we can provide payment URL.
 						return bot.replyMessage(event.replyToken, message);
 					}).then((response) => {
-						cache.put(event.source.userId, {
-							subscription: "inactive"
-						});
+						return;
 					});
 				} else {
 					// User does not purchase so say good bye.
