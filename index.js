@@ -39,7 +39,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 				case "text":
 					console.log(`[Start]event.message.type === text`);
 					console.log(event.message);
-					text = event.message.text;
+					const text = event.message.text;
 					switch (text) {
 						case "一覧":
 							console.log(`TODO: 一覧表示`);
