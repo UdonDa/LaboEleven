@@ -4,4 +4,4 @@ npm-debug.log
 .env.sh
 .env
 .env-mac.sh
-index-mac.js
+client_secret.js
