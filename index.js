@@ -6,7 +6,7 @@ const cache = require("memory-cache");
 const path = require("path");
 
 //line bot
-const lineBot = require("@line/bpt-sdk");
+const lineBot = require("@line/bot-sdk");
 const botConfig = {
 	channelAccessToken: process.env.LINE_BOT_ACCESS_TOKEN,
 	channelSecret: process.env.LINE_BOT_CHANNEL_SECRET
