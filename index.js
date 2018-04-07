@@ -49,7 +49,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							};
 							return bot.replyMessage(event.replyToken, echo);
 							break;
-						case text.match(/購入/):
+						case text.match(/^購入/):
 							console.log(`購入処理`);
 							const splitedText = text.split(`　`);
 							console.log(splitedText);
