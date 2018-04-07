@@ -9,7 +9,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "child_process": "^1.0.2",
     "express": "^4.16.3",
+    "fs": "0.0.1-security",
     "memory-cache": "^0.2.0",
     "path": "^0.12.7"
   }
