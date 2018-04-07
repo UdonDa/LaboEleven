@@ -15,6 +15,9 @@ const pay = new linePay({
 	isSandbox: true,
 });
 
+console.log(`[process.env.QUOTAGUARDSTATIC_URL.hostname]${process.env.QUOTAGUARDSTATIC_URL.hostname}`);
+console.log(`[process.env.QUOTAGUARDSTATIC_URL]${process.env.QUOTAGUARDSTATIC_URL}`);
+
 //line bot
 const lineBot = require("@line/bot-sdk");
 const botConfig = {
