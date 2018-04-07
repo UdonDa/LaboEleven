@@ -25,24 +25,53 @@ const bot = new lineBot.Client(botConfig);
 server.listen(process.env.PORT || 5000);
 
 server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
+	if (!Array.isArray(req.body.events)) {
+		return res.status(500).end();
+	}
 	res.sendStatus(200);
-
 	req.body.events.map((event) => {
 		let context = cache.get(event.source.userId);
 
 		if (!context){
-			let message = {
-				type: "template",
-				altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
-				template: {
-					type: "confirm",
-					text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
-					actions: [
-						{type: "postback", label: "Yes", data: "yes"},
-						{type: "postback", label: "No Thanks", data: "no"}
-					]
-				}
-			};
+
+			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
+			switch (event.message.type) {
+				case "text":
+					console.log(`[Start]event.message.type === text`);
+
+					text = event.message.text;
+					switch (text) {
+						case "一覧":
+							console.log(`TODO: 一覧表示`);
+							break;
+						case text.indexOf('購入') !== -1:
+							console.log(`購入処理`);
+							break;
+						case text.indexOf('登録'):
+							console.log(`登録処理`);
+							break;
+						default:
+							console.log(`普通に買えって返す`);
+							break;
+					}
+					break;
+				default:
+					console.log(`普通に買えって返す`);
+					break;
+			}
+			//
+			// let message = {
+			// 	type: "template",
+			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
+			// 	template: {
+			// 		type: "confirm",
+			// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
+			// 		actions: [
+			// 			{type: "postback", label: "Yes", data: "yes"},
+			// 			{type: "postback", label: "No Thanks", data: "no"}
+			// 		]
+			// 	}
+			// };
 			return bot.replyMessage(event.replyToken, message).then((response) => {
 				cache.put(event.source.userId, {
 					subscription: "inactive"
