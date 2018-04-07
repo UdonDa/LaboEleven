@@ -40,30 +40,23 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					console.log(`[Start]event.message.type === text`);
 					console.log(event.message);
 					const text = event.message.text;
-					switch (text) {
-
-						case "一覧":
+						if (text === "一覧") {
 							console.log(`TODO: 一覧表示`);
 							const echo = {
 								type: 'text',
 								text: 'ls'
 							};
 							return bot.replyMessage(event.replyToken, echo);
-							break;
-						case /^購入/.test(text):
+						} else if (/^購入/.test(text)) {
 							console.log(`購入処理`);
 							const splitedText = text.split(`　`);
 							console.log(splitedText);
-							break;
-						case /^登録/.test(text):
-							console.log(`登録処理`);
-							break;
-						default:
-							console.log(`普通に買えって返す`);
-							console.log(`[/^購入/.test(text)] ${/^購入/.test(text)}`);
 
-							break;
-					}
+						} else if (/^登録/.test(text)) {
+							console.log(`登録処理`);
+						} else {
+							console.log(`普通に買えって返す`);
+						}
 					break;
 				default:
 					console.log(`普通に買えって返す(text以外がきたよーん)`);
