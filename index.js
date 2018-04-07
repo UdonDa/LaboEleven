@@ -38,7 +38,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 			switch (event.message.type) {
 				case "text":
 					console.log(`[Start]event.message.type === text`);
-
+					console.log(event.message);
 					text = event.message.text;
 					switch (text) {
 						case "一覧":
