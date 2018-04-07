@@ -49,10 +49,11 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							};
 							return bot.replyMessage(event.replyToken, echo);
 							break;
-						case text.indexOf('購入') !== -1:
+						case text.match('購入'):
 							console.log(`購入処理`);
+							
 							break;
-						case text.indexOf('登録'):
+						case text.match('登録'):
 							console.log(`登録処理`);
 							break;
 						default:
