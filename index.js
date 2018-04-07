@@ -16,7 +16,7 @@ const pay = new linePay({
 	isSandbox: true,
 	sessionOptions: {
 		secret: 'keyboard cat',
-		proxy: true,
+		proxy: false,
 		resave: false,
 		saveUninitialized: true,
 		cookie: { secure: true }
