@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const server = require("express")();
 const cache = require("memory-cache");
+const fs = require("fs");
 
 //Line Pay API
 const linePay = require("line-pay");
@@ -71,8 +72,6 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						});
 
 					} else if (/^登録/.test(text)) {
-
-						
 						ITEM_NUMBER = text.match(/\d+/)[0];
 						const message = getConfirmMessage(1, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
@@ -114,6 +113,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					});
 				} else if (event.postback.data === "yes_enroll") {
 					const text = "ご登録ありがとうございます";
+					const textForLogs = `ID:${event.source.userId} WHEN:${getTodayTimestamp()} ITEM_ID:${ITEM_NUMBER}\n`;
+					fs.appendFileSync('logs.txt', textForLogs, 'utf8');
 					const message = getTextMessage(text);
 					return bot.replyMessage(event.replyToken, message).then((response) => {
 						cache.del(event.source.userId);
@@ -186,10 +187,10 @@ function getConfirmMessage(mode, itemNumber) {
 	} else if (mode === ENROLL) {
 		return {
 			type: "template",
-			altText: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
+			altText: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 20}円を差し上げます`,
 			template: {
 				type: "confirm",
-				text: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
+				text: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 20}円を差し上げます`,
 				actions: [
 					{type: "postback", label: "Yes", data: "yes_enroll"},
 					{type: "postback", label: "No Thanks", data: "no_enroll"}
@@ -231,6 +232,11 @@ function getTextMessage(text) {
 		type: 'text',
 		text: text
 	}
+}
+
+function getTodayTimestamp() {
+	const date = new Date();
+	return `${date.getFullYear()}${date.getMonth()}${date.getDate()}${date.getHours()}${date.getMinutes()}`
 }
 
 function setSubscription(userId, subscription) {
