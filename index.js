@@ -3,9 +3,7 @@ require("dotenv").config();
 
 const server = require("express")();
 const cache = require("memory-cache");
-const path = require("path");
-const session = require("express-session");
-server.set('trust proxy', 1);
+
 //Line Pay API
 const linePay = require("line-pay");
 const pay = new linePay({
@@ -40,227 +38,35 @@ const ITEM_NAME_TABLE = {
 	4: 'エナジードリンク'
 };
 
-
-
 server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
-	console.log(`[ITEM_NUMBER] ${ITEM_NUMBER}`);
 	if (!Array.isArray(req.body.events)) {
 		return res.status(500).end();
 	}
+
 	res.sendStatus(200);
 	req.body.events.map((event) => {
-		let context = cache.get(event.source.userId);
-		console.log(context);
-
-		if (!context) {
-
-			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
+		const context = cache.get(event.source.userId);
+		if (!context || context.subscription === "active") {
 			switch (event.message.type) {
 				case "text":
-					console.log(`[Start]event.message.type === text`);
-					console.log(event.message);
-					const text = event.message.text;
-						if (text === "一覧") {
-							console.log(`TODO: 一覧表示`);
-							const echo = {
-								type: 'text',
-								text: 'ls'
-							};
-							return bot.replyMessage(event.replyToken, echo);
-						} else if (/^購入/.test(text)) {
-							console.log(`購入処理`);
-							//TODO: DBにないときの早期処理
-							ITEM_NUMBER = text.match(/\d+/)[0];
-
-							console.log(`[ITEM_NUMBER]` + ITEM_NUMBER);
-							const message = {
-								type: "template",
-								altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
-								template: {
-									type: "confirm",
-									text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
-									actions: [
-										{type: "postback", label: "Yes", data: "yes"},
-										{type: "postback", label: "No Thanks", data: "no"}
-									]
-								}
-							};
-							return bot.replyMessage(event.replyToken, message).then((response) => {
-								cache.put(event.source.userId, {
-									subscription: "inactive"
-								});
-							});
-						} else if (/^登録/.test(text)) {
-							console.log(`登録処理`);
-							ITEM_NUMBER = text.match(/\d+/)[0];
-							const message = {
-								type: "template",
-								altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
-								template: {
-									type: "confirm",
-									text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
-									actions: [
-										{type: "postback", label: "Yes", data: "yes_enroll"},
-										{type: "postback", label: "No Thanks", data: "no_enroll"}
-									]
-								}
-							};
-							return bot.replyMessage(event.replyToken, message).then((response) => {
-								cache.put(event.source.userId, {
-									subscription: "inactive"
-								});
-							});
-
-						} else {
-							console.log(`普通に買えって返す`);
-						}
-					break;
-				default:
-					console.log(`普通に買えって返す(text以外がきたよーん)`);
-					break;
-			}
-
-			// let message = {
-			// 	type: "template",
-			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
-			// 	template: {
-			// 		type: "confirm",
-			// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
-			// 		actions: [
-			// 			{type: "postback", label: "Yes", data: "yes"},
-			// 			{type: "postback", label: "No Thanks", data: "no"}
-			// 		]
-			// 	}
-			// };
-			return bot.replyMessage(event.replyToken, message).then((response) => {
-				cache.put(event.source.userId, {
-					subscription: "inactive"
-				});
-			});
-		} else if (context.subscription === "inactive") {
-			if (event.type === "postback"){
-				if (event.postback.data === "yes") {
-					let reservation = {
-						productName: ITEM_NAME_TABLE[ITEM_NUMBER.toString()],
-						amount: ITEM_TABLE[ITEM_NUMBER.toString()],
-						currency: "JPY",
-						confirmUrl: process.env.LINE_PAY_CONFIRM_URL || `https://${req.hostname}/pay/confirm`,
-						confirmUrlType: "SERVER",
-						orderId: `${event.source.userId}-${Date.now()}`
-					};
-
-					// Call LINE Pay reserve API.
-					pay.reserve(reservation).then((response) => {
-						reservation.transactionId = response.info.transactionId;
-						reservation.userId = event.source.userId;
-						cache.put(reservation.transactionId, reservation);
-
-						let message = {
-							type: "template",
-							altText: `LINE Payでお支払いよろしくおねがしいます`,
-							template: {
-								type: "buttons",
-								text: `LINE Payでお支払いよろしくおねがしいます`,
-								actions: [
-									{type: "uri", label: "Pay by LINE Pay", uri: response.info.paymentUrl.web},
-								]
-							}
-						};
-						// Now we can provide payment URL.
-						return bot.replyMessage(event.replyToken, message).then((response) => {
-							cache.put(event.source.userId, {
-								subscription: "active"
-							});
-						})
-					}).then((response) => {
-						return;
-					});
-				} else if (event.postback.data === "no") {
-					let message = {
-						type: "text",
-						text: "買えや"
-					};
-					return bot.replyMessage(event.replyToken, message).then((response) => {
-						cache.del(event.source.userId);
-						return;
-					});
-				} else if (event.postback.data === "yes_enroll") {
-					let message = {
-						type: "text",
-						text: "ご登録ありがとうございます"
-					};
-					return bot.replyMessage(event.replyToken, message).then((response) => {
-						cache.del(event.source.userId);
-						return;
-					});
-				} else if (event.postback.data === "no_enroll") {
-					let message = {
-						type: "text",
-						text: "そうですか"
-					};
-					return bot.replyMessage(event.replyToken, message).then((response) => {
-						cache.del(event.source.userId);
-						return;
-					});
-				}
-			}
-		} else if (context.subscription === "active") {
-
-			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
-			switch (event.message.type) {
-				case "text":
-					console.log(`[Start]event.message.type === text`);
-					console.log(event.message);
 					const text = event.message.text;
 					if (text === "一覧") {
-						console.log(`TODO: 一覧表示`);
-						const echo = {
-							type: 'text',
-							text: 'ls'
-						};
-						return bot.replyMessage(event.replyToken, echo);
+						const message = getTextMessage('ls');
+						return bot.replyMessage(event.replyToken, message);
+
 					} else if (/^購入/.test(text)) {
-						console.log(`購入処理`);
 						//TODO: DBにないときの早期処理
 						ITEM_NUMBER = text.match(/\d+/)[0];
-
-						console.log(`[ITEM_NUMBER]` + ITEM_NUMBER);
-						const message = {
-							type: "template",
-							altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
-							template: {
-								type: "confirm",
-								text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
-								actions: [
-									{type: "postback", label: "Yes", data: "yes"},
-									{type: "postback", label: "No Thanks", data: "no"}
-								]
-							}
-						};
+						const message = getConfirmMessage(0, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
-							cache.put(event.source.userId, {
-								subscription: "inactive"
-							});
+							setSubscription(event.source.userId, "inactive");
 						});
+
 					} else if (/^登録/.test(text)) {
-						console.log(`登録処理`);
 						ITEM_NUMBER = text.match(/\d+/)[0];
-						const message = {
-							type: "template",
-							altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円を差し上げます`,
-							template: {
-								type: "confirm",
-								text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円を差し上げます`,
-								actions: [
-									{type: "postback", label: "Yes", data: "yes_enroll"},
-									{type: "postback", label: "No Thanks", data: "no_enroll"}
-								]
-							}
-						};
+						const message = getConfirmMessage(1, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
-							cache.put(event.source.userId, {
-								subscription: "inactive"
-							});
+							setSubscription(event.source.userId, "inactive");
 						});
 
 					} else {
@@ -272,7 +78,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					break;
 			}
 
-			// let message = {
+			// No thanks押し忘れた時用
+			// const message = {
 			// 	type: "template",
 			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
 			// 	template: {
@@ -284,31 +91,67 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 			// 		]
 			// 	}
 			// };
-			return bot.replyMessage(event.replyToken, message).then((response) => {
-				cache.put(event.source.userId, {
-					subscription: "inactive"
-				});
-			});
+			// return bot.replyMessage(event.replyToken, message).then((response) => {
+			// 	cache.put(event.source.userId, {
+			// 		subscription: "inactive"
+			// 	});
+			// });
+		} else if (context.subscription === "inactive") {
+			if (event.type === "postback") {
+				if (event.postback.data === "yes") {
+					const reservation = getReservationText(ITEM_NUMBER, event.source.userId, req.hostname);
+					pay.reserve(reservation).then((response) => {
+						reservation.transactionId = response.info.transactionId;
+						reservation.userId = event.source.userId;
+						cache.put(reservation.transactionId, reservation);
+						const text = 'LINE Payでお支払いよろしくおねがしいます';
+						const message = getButtonsText(text, response.info.paymentUrl.web);
+						return bot.replyMessage(event.replyToken, message).then((response) => {
+							setSubscription(event.source.userId, "active")
+						})
+					}).then((response) => {
+						return;
+					});
+				} else if (event.postback.data === "no") {
+					const text = "そっか〜〜";
+					const message = getTextMessage(text);
+					return bot.replyMessage(event.replyToken, message).then((response) => {
+						cache.del(event.source.userId);
+						return;
+					});
+				} else if (event.postback.data === "yes_enroll") {
+					const text = "ご登録ありがとうございます";
+					const message = getTextMessage(text);
+					return bot.replyMessage(event.replyToken, message).then((response) => {
+						cache.del(event.source.userId);
+						return;
+					});
+				} else if (event.postback.data === "no_enroll") {
+					const text = "そっかーーー";
+					const message = getTextMessage(text);
+					return bot.replyMessage(event.replyToken, message).then((response) => {
+						cache.del(event.source.userId);
+						return;
+					});
+				}
+			}
 		}
 	});
 });
 
-// If user approve the payment, LINE Pay server call this webhook.
 server.get("/pay/confirm", (req, res, next) => {
 	console.log(req.query);
 
-	if (!req.query.transactionId){
+	if (!req.query.transactionId) {
 		return res.status(400).send("Transaction Id not found.");
 	}
-
-	// Retrieve the reservation from database.
-	let reservation = cache.get(req.query.transactionId);
+	const reservation = cache.get(req.query.transactionId);
 	console.log(reservation);
-	if (!reservation){
+	if (!reservation) {
 		return res.status(400).send("Reservation not found.")
 	}
 
-	let confirmation = {
+	const confirmation = {
 		transactionId: req.query.transactionId,
 		amount: reservation.amount,
 		currency: reservation.currency
@@ -316,11 +159,11 @@ server.get("/pay/confirm", (req, res, next) => {
 	return pay.confirm(confirmation).then((response) => {
 		res.sendStatus(200);
 
-		let messages = [{
+		const messages = [{
 			type: "sticker",
 			packageId: 2,
 			stickerId: 144
-		},{
+		}, {
 			type: "text",
 			text: "ありがとうございます!"
 		}];
@@ -329,3 +172,76 @@ server.get("/pay/confirm", (req, res, next) => {
 		cache.put(reservation.userId, {subscription: "active"});
 	});
 });
+
+
+function getConfirmMessage(mode, itemNumber) {
+	const BUY = 0;
+	const ENROLL = 1;
+	if (mode === BUY) {
+		return {
+			type: "template",
+			altText: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
+			template: {
+				type: "confirm",
+				text: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
+				actions: [
+					{type: "postback", label: "Yes", data: "yes"},
+					{type: "postback", label: "No Thanks", data: "no"}
+				]
+			}
+		}
+	} else if (mode === ENROLL) {
+		return {
+			type: "template",
+			altText: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
+			template: {
+				type: "confirm",
+				text: `${itemNumber}番の${ITEM_NAME_TABLE[itemNumber.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
+				actions: [
+					{type: "postback", label: "Yes", data: "yes_enroll"},
+					{type: "postback", label: "No Thanks", data: "no_enroll"}
+				]
+			}
+		}
+	} else {
+		return null;
+	}
+}
+
+function getReservationText(itemNumber, userId, hostName) {
+	return {
+		productName: ITEM_NAME_TABLE[itemNumber.toString()],
+		amount: ITEM_TABLE[itemNumber.toString()],
+		currency: "JPY",
+		confirmUrl: process.env.LINE_PAY_CONFIRM_URL || `https://${hostName}/pay/confirm`,
+		confirmUrlType: "SERVER",
+		orderId: `${userId}-${Date.now()}`
+	};
+}
+
+function getButtonsText(text, uri) {
+	return {
+		type: "template",
+		altText: text,
+		template: {
+			type: "buttons",
+			text: text,
+			actions: [
+				{type: "uri", label: "Pay by LINE Pay", uri: uri},
+			]
+		}
+	}
+}
+
+function getTextMessage(text) {
+	return {
+		type: 'text',
+		text: text
+	}
+}
+
+function setSubscription(userId, subscription) {
+	return cache.put(userId, {
+		subscription: subscription
+	});
+}
