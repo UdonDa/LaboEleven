@@ -25,12 +25,44 @@ const bot = new lineBot.Client(botConfig);
 server.listen(process.env.PORT || 5000);
 
 server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
+	if (!Array.isArray(req.body.events)) {
+		return res.status(500).end();
+	}
 	res.sendStatus(200);
-
 	req.body.events.map((event) => {
 		let context = cache.get(event.source.userId);
 
 		if (!context){
+
+			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
+			switch (event.message.type) {
+				case "text":
+					console.log(`[Start]event.message.type === text`);
+					console.log(event.message);
+					const text = event.message.text;
+						if (text === "一覧") {
+							console.log(`TODO: 一覧表示`);
+							const echo = {
+								type: 'text',
+								text: 'ls'
+							};
+							return bot.replyMessage(event.replyToken, echo);
+						} else if (/^購入/.test(text)) {
+							console.log(`購入処理`);
+							const splitedText = text.split(`　`);
+							console.log(`${splitedText[-1]}を購入するんだ〜〜`);
+
+						} else if (/^登録/.test(text)) {
+							console.log(`登録処理`);
+						} else {
+							console.log(`普通に買えって返す`);
+						}
+					break;
+				default:
+					console.log(`普通に買えって返す(text以外がきたよーん)`);
+					break;
+			}
+
 			let message = {
 				type: "template",
 				altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
