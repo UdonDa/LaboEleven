@@ -24,7 +24,10 @@ const bot = new lineBot.Client(botConfig);
 
 server.listen(process.env.PORT || 5000);
 
+var ITEM_NUMBER = 0;
+
 server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
+	console.log(`[ITEM_NUMBER] ${ITEM_NUMBER}`);
 	if (!Array.isArray(req.body.events)) {
 		return res.status(500).end();
 	}
@@ -50,15 +53,15 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						} else if (/^購入/.test(text)) {
 							console.log(`購入処理`);
 							//TODO: DBにないときの早期処理
-							const itemNumber = text.match(/\d+/)[0];
+							ITEM_NUMBER = text.match(/\d+/)[0];
 
-							console.log(`[itemNumber]` + itemNumber);
+							console.log(`[ITEM_NUMBER]` + ITEM_NUMBER);
 							const message = {
 								type: "template",
-								altText: `${itemNumber}番を購入しますか?\nhoge円になります`,
+								altText: `${ITEM_NUMBER}番を購入しますか?\nhoge円になります`,
 								template: {
 									type: "confirm",
-									text: `${itemNumber}番を購入しますか?\nhoge円になります`,
+									text: `${ITEM_NUMBER}番を購入しますか?\nhoge円になります`,
 									actions: [
 										{type: "postback", label: "Yes", data: "yes"},
 										{type: "postback", label: "No Thanks", data: "no"}
