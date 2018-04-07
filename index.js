@@ -11,8 +11,6 @@ const linePay = require("line-pay");
 const pay = new linePay({
 	channelId: process.env.LINE_PAY_CHANNEL_ID,
 	channelSecret: process.env.LINE_PAY_CHANNEL_SECRET,
-	//hostname: process.env.LINE_PAY_HOSTNAME,
-	//hostname: process.env.QUOTAGUARDSTATIC_URL,
 	isSandbox: true,
 });
 
@@ -97,10 +95,10 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							ITEM_NUMBER = text.match(/\d+/)[0];
 							const message = {
 								type: "template",
-								altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円を差し上げます`,
+								altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
 								template: {
 									type: "confirm",
-									text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円を差し上げます`,
+									text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を登録しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()] + 50}円を差し上げます`,
 									actions: [
 										{type: "postback", label: "Yes", data: "yes_enroll"},
 										{type: "postback", label: "No Thanks", data: "no_enroll"}
@@ -190,6 +188,15 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					let message = {
 						type: "text",
 						text: "ご登録ありがとうございます"
+					};
+					return bot.replyMessage(event.replyToken, message).then((response) => {
+						cache.del(event.source.userId);
+						return;
+					});
+				} else if (event.postback.data === "no_enroll") {
+					let message = {
+						type: "text",
+						text: "そうですか"
 					};
 					return bot.replyMessage(event.replyToken, message).then((response) => {
 						cache.del(event.source.userId);
