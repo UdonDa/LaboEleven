@@ -52,6 +52,23 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							const splitedText = text.split(`　`);
 							console.log(`${splitedText[-1]}を購入するんだ〜〜`);
 
+							const message = {
+								type: "template",
+								altText: `${splitedText[-1]}版を購入しますか?\nhoge円になります`,
+								template: {
+									type: "confirm",
+									text: `${splitedText[-1]}版を購入しますか?\nhoge円になります`,
+									actions: [
+										{type: "postback", label: "Yes", data: "yes"},
+										{type: "postback", label: "No Thanks", data: "no"}
+									]
+								}
+							};
+							return bot.replyMessage(event.replyToken, message).then((response) => {
+								cache.put(event.source.userId, {
+									subscription: "inactive"
+								});
+							});
 						} else if (/^登録/.test(text)) {
 							console.log(`登録処理`);
 						} else {
@@ -63,18 +80,18 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					break;
 			}
 
-			let message = {
-				type: "template",
-				altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
-				template: {
-					type: "confirm",
-					text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
-					actions: [
-						{type: "postback", label: "Yes", data: "yes"},
-						{type: "postback", label: "No Thanks", data: "no"}
-					]
-				}
-			};
+			// let message = {
+			// 	type: "template",
+			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
+			// 	template: {
+			// 		type: "confirm",
+			// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
+			// 		actions: [
+			// 			{type: "postback", label: "Yes", data: "yes"},
+			// 			{type: "postback", label: "No Thanks", data: "no"}
+			// 		]
+			// 	}
+			// };
 			return bot.replyMessage(event.replyToken, message).then((response) => {
 				cache.put(event.source.userId, {
 					subscription: "inactive"
