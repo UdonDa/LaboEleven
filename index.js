@@ -11,16 +11,9 @@ const linePay = require("line-pay");
 const pay = new linePay({
 	channelId: process.env.LINE_PAY_CHANNEL_ID,
 	channelSecret: process.env.LINE_PAY_CHANNEL_SECRET,
-	hostname: process.env.LINE_PAY_HOSTNAME,
+	//hostname: process.env.LINE_PAY_HOSTNAME,
 	//hostname: process.env.QUOTAGUARDSTATIC_URL,
 	isSandbox: true,
-	sessionOptions: {
-		secret: 'keyboard cat',
-		proxy: false,
-		resave: false,
-		saveUninitialized: true,
-		cookie: { secure: true }
-	}
 });
 
 //line bot
@@ -61,7 +54,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 		let context = cache.get(event.source.userId);
 		console.log(context);
 
-		if (!context){
+		if (!context) {
 
 			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
 			switch (event.message.type) {
@@ -157,7 +150,11 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							}
 						};
 						// Now we can provide payment URL.
-						return bot.replyMessage(event.replyToken, message);
+						return bot.replyMessage(event.replyToken, message).then((response) => {
+							cache.put(event.source.userId, {
+								subscription: "active"
+							});
+						})
 					}).then((response) => {
 						return;
 					});
@@ -175,13 +172,70 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 				}
 			}
 		} else if (context.subscription === "active"){
-			// User has the active subscription.
 
-			debug(`User has the active subscription.`);
+			// [メモ]もしも、今後画像以外対応させるときに楽なようにswitch使ってます.
+			switch (event.message.type) {
+				case "text":
+					console.log(`[Start]event.message.type === text`);
+					console.log(event.message);
+					const text = event.message.text;
+					if (text === "一覧") {
+						console.log(`TODO: 一覧表示`);
+						const echo = {
+							type: 'text',
+							text: 'ls'
+						};
+						return bot.replyMessage(event.replyToken, echo);
+					} else if (/^購入/.test(text)) {
+						console.log(`購入処理`);
+						//TODO: DBにないときの早期処理
+						ITEM_NUMBER = text.match(/\d+/)[0];
 
-			delete event.message.id;
-			return bot.replyMessage(event.replyToken, event.message).then((response) => {
-				return;
+						console.log(`[ITEM_NUMBER]` + ITEM_NUMBER);
+						const message = {
+							type: "template",
+							altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
+							template: {
+								type: "confirm",
+								text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
+								actions: [
+									{type: "postback", label: "Yes", data: "yes"},
+									{type: "postback", label: "No Thanks", data: "no"}
+								]
+							}
+						};
+						return bot.replyMessage(event.replyToken, message).then((response) => {
+							cache.put(event.source.userId, {
+								subscription: "inactive"
+							});
+						});
+					} else if (/^登録/.test(text)) {
+						console.log(`登録処理`);
+					} else {
+						console.log(`普通に買えって返す`);
+					}
+					break;
+				default:
+					console.log(`普通に買えって返す(text以外がきたよーん)`);
+					break;
+			}
+
+			// let message = {
+			// 	type: "template",
+			// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
+			// 	template: {
+			// 		type: "confirm",
+			// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
+			// 		actions: [
+			// 			{type: "postback", label: "Yes", data: "yes"},
+			// 			{type: "postback", label: "No Thanks", data: "no"}
+			// 		]
+			// 	}
+			// };
+			return bot.replyMessage(event.replyToken, message).then((response) => {
+				cache.put(event.source.userId, {
+					subscription: "inactive"
+				});
 			});
 		}
 	});
