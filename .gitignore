@@ -5,4 +5,5 @@ npm-debug.log
 .env
 .env-mac.sh
 client_secret.json
-logs.txt
+logs_enrolled.txt
+logs_bought.txt
