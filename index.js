@@ -74,10 +74,10 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							console.log(`[ITEM_NUMBER]` + ITEM_NUMBER);
 							const message = {
 								type: "template",
-								altText: `${ITEM_NUMBER}番を購入しますか?\nhoge円になります`,
+								altText: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
 								template: {
 									type: "confirm",
-									text: `${ITEM_NUMBER}番を購入しますか?\nhoge円になります`,
+									text: `${ITEM_NUMBER}番の${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}を購入しますか?\n${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります`,
 									actions: [
 										{type: "postback", label: "Yes", data: "yes"},
 										{type: "postback", label: "No Thanks", data: "no"}
@@ -137,10 +137,10 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 
 						let message = {
 							type: "template",
-							altText: `${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}は${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります.`,
+							altText: `LINE Payでお支払いよろしくおねがしいます`,
 							template: {
 								type: "buttons",
-								text: `${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}は${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります.`,
+								text: `LINE Payでお支払いよろしくおねがしいます`,
 								actions: [
 									{type: "uri", label: "Pay by LINE Pay", uri: response.info.paymentUrl.web},
 								]
