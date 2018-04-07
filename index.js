@@ -14,12 +14,12 @@ const pay = new linePay({
 	hostname: process.env.LINE_PAY_HOSTNAME,
 	//hostname: process.env.QUOTAGUARDSTATIC_URL,
 	isSandbox: true,
-	sessionOptions: {
-		secret: 'keyboard cat',
-		resave: false,
-		saveUninitialized: true,
-		cookie: { secure: true }
-	}
+	// sessionOptions: {
+	// 	secret: 'keyboard cat',
+	// 	resave: false,
+	// 	saveUninitialized: true,
+	// 	cookie: { secure: true }
+	// }
 });
 
 //line bot
