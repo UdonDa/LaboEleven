@@ -49,7 +49,9 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							return bot.replyMessage(event.replyToken, echo);
 						} else if (/^購入/.test(text)) {
 							console.log(`購入処理`);
-							const itemNumber = text.match(/\d{1,2}/)[0];
+							//TODO: DBにないときの早期処理
+							const itemNumber = text.match(/\d+/)[0];
+
 							console.log(`[itemNumber]` + itemNumber);
 							const message = {
 								type: "template",
