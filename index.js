@@ -49,12 +49,12 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							};
 							return bot.replyMessage(event.replyToken, echo);
 							break;
-						case text.match(/^購入/):
+						case /^購入/.test(text):
 							console.log(`購入処理`);
 							const splitedText = text.split(`　`);
 							console.log(splitedText);
 							break;
-						case text.match(/登録/):
+						case /^登録/.test(text):
 							console.log(`登録処理`);
 							break;
 						default:
