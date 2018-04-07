@@ -11,12 +11,9 @@ const linePay = require("line-pay");
 const pay = new linePay({
 	channelId: process.env.LINE_PAY_CHANNEL_ID,
 	channelSecret: process.env.LINE_PAY_CHANNEL_SECRET,
-	hostname: process.env.QUOTAGUARDSTATIC_URL.hostname,
+	hostname: process.env.LINE_PAY_HOSTNAME,
 	isSandbox: true,
 });
-
-console.log(`[process.env.QUOTAGUARDSTATIC_URL.hostname]${process.env.QUOTAGUARDSTATIC_URL.hostname}`);
-console.log(`[process.env.QUOTAGUARDSTATIC_URL]${process.env.QUOTAGUARDSTATIC_URL}`);
 
 //line bot
 const lineBot = require("@line/bot-sdk");
