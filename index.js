@@ -50,7 +50,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						} else if (/^購入/.test(text)) {
 							console.log(`購入処理`);
 							const splitedText = text.split(`　`);
-							console.log(`${splitedText[-1]}を購入するんだ〜〜`);
+							console.log(`[splitedText]` + splitedText);
 
 							const message = {
 								type: "template",
