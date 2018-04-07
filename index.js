@@ -20,6 +20,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 		return res.status(500).end();
 	}
 	res.sendStatus(200);
+	console.log(req.body);
 
 	Promise
 		.all(req.body.events.map(handleEvent))
