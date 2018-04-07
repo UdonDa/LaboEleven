@@ -53,7 +53,13 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 				case "text":
 					const text = event.message.text;
 					if (text === "一覧") {
-						const message = getTextMessage('ls');
+						const items = Object.values(ITEM_NAME_TABLE);
+						const prices = Object.values(ITEM_TABLE);
+						var results = '';
+						for (var id=0; id<items.length;id++) {
+							results += `${id+1}. ${items[id]} : ${prices[id]}円\n`;
+						}
+						const message = getTextMessage(results);
 						return bot.replyMessage(event.replyToken, message);
 
 					} else if (/^購入/.test(text)) {
@@ -65,6 +71,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						});
 
 					} else if (/^登録/.test(text)) {
+
+						
 						ITEM_NUMBER = text.match(/\d+/)[0];
 						const message = getConfirmMessage(1, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
