@@ -17,7 +17,8 @@
     "fs": "0.0.1-security",
     "line-pay": "^1.0.11",
     "memory-cache": "^0.2.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "request": "^2.85.0"
   },
   "engines": {
     "node": ">=0.10.3 <0.12"
