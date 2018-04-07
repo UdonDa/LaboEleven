@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const server = require("express")();
 const cache = require("memory-cache");
+const fs = require("fs");
 
 //Line Pay API
 const linePay = require("line-pay");
@@ -79,8 +80,6 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					console.log(`普通に買えって返す(text以外がきたよーん)`);
 					break;
 			}
-
-
 		} else if (context.subscription === "inactive") {
 			if (event.type === "postback") {
 				if (event.postback.data === "yes") {
@@ -106,6 +105,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					});
 				} else if (event.postback.data === "yes_enroll") {
 					const text = "ご登録ありがとうございます";
+					const textForLog = `ID:${event.source.userId} WHEN:${getTodayTimestamp()} ITEM_ID:${ITEM_NUMBER}\n`;
+					fs.appendFileSync('logs.txt', textForLog, 'utf8');
 					const message = getTextMessage(text);
 					return bot.replyMessage(event.replyToken, message).then((response) => {
 						cache.del(event.source.userId);
@@ -229,4 +230,9 @@ function setSubscription(userId, subscription) {
 	return cache.put(userId, {
 		subscription: subscription
 	});
+}
+
+function getTodayTimestamp() {
+	const date = new Date();
+	return `${date.getFullYear()}${date.getMonth()+1}${date.getDate()}${date.getHours()}${date.getMinutes()}`
 }
