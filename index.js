@@ -137,10 +137,10 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 
 						let message = {
 							type: "template",
-							altText: "Please proceed to the payment.",
+							altText: `${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}は${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります.`,
 							template: {
 								type: "buttons",
-								text: "Please proceed to the payment.",
+								text: `${ITEM_NAME_TABLE[ITEM_NUMBER.toString()]}は${ITEM_TABLE[ITEM_NUMBER.toString()]}円になります.`,
 								actions: [
 									{type: "uri", label: "Pay by LINE Pay", uri: response.info.paymentUrl.web},
 								]
