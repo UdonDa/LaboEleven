@@ -66,6 +66,11 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					} else if (/^購入/.test(text)) {
 						//TODO: DBにないときの早期処理
 						ITEM_NUMBER = text.match(/\d+/)[0];
+						const items = Object.values(ITEM_NAME_TABLE);
+						if (ITEM_NUMBER > items.length) {
+							const message = getTextMessage(`この商品は現在取り扱ってないです`);
+							return bot.replyMessage(event.replyToken, message);
+						}
 						const message = getConfirmMessage(0, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
 							setSubscription(event.source.userId, "inactive");
@@ -73,21 +78,26 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 
 					} else if (/^登録/.test(text)) {
 						ITEM_NUMBER = text.match(/\d+/)[0];
+						const items = Object.values(ITEM_NAME_TABLE);
+						if (ITEM_NUMBER > items.length) {
+							const message = getTextMessage(`この商品は現在取り扱ってないです`);
+							return bot.replyMessage(event.replyToken, message);
+						}
 						const message = getConfirmMessage(1, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
 							setSubscription(event.source.userId, "inactive");
 						});
 
 					} else {
-						console.log(`普通に買えって返す`);
+						const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
+						return bot.replyMessage(event.replyToken, message);
 					}
 					break;
 				default:
-					console.log(`普通に買えって返す(text以外がきたよーん)`);
+					const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
+					return bot.replyMessage(event.replyToken, message);
 					break;
 			}
-
-
 		} else if (context.subscription === "inactive") {
 			if (event.type === "postback") {
 				if (event.postback.data === "yes") {
@@ -96,7 +106,7 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						reservation.transactionId = response.info.transactionId;
 						reservation.userId = event.source.userId;
 						cache.put(reservation.transactionId, reservation);
-						const text = 'LINE Payでお支払いよろしくおねがしいます';
+						const text = 'LINE Payでお支払いお願いします';
 						const message = getButtonsText(text, response.info.paymentUrl.web);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
 							setSubscription(event.source.userId, "active")
