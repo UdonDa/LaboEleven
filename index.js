@@ -66,6 +66,14 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 					} else if (/^購入/.test(text)) {
 						//TODO: DBにないときの早期処理
 						ITEM_NUMBER = text.match(/\d+/)[0];
+						console.log(`[ITEM_NUMBER]${ITEM_NUMBER}`);
+						const items = Object.values(ITEM_NAME_TABLE);
+						console.log(`[items.length]${items.length}`);
+						if (ITEM_NUMBER > items.length) {
+							console.log(ITEM_NUMBER > items.length);
+						}
+
+
 						const message = getConfirmMessage(0, ITEM_NUMBER);
 						return bot.replyMessage(event.replyToken, message).then((response) => {
 							setSubscription(event.source.userId, "inactive");
