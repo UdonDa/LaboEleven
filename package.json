@@ -20,6 +20,7 @@
     "line-pay": "^1.0.11",
     "memory-cache": "^0.2.0",
     "mongodb": "^3.0.5",
+    "mongoose": "^5.0.13",
     "path": "^0.12.7",
     "request": "^2.85.0"
   },

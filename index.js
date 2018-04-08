@@ -4,6 +4,14 @@ require("dotenv").config();
 const server = require("express")();
 const cache = require("memory-cache");
 const fs = require("fs");
+const mongo = require("mongodb").MongoClient;
+
+//mongo
+const mongoUrl =
+mongo.connect(mongoUrl, (error, db) => {
+	console.log('connecting!!!');
+	db.close()
+});
 
 //Line Pay API
 const linePay = require("line-pay");
