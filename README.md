@@ -27,6 +27,9 @@
 ### デメリット
 + めんどくさい
 
+<img src="./img/abstract.png" width="500px" height="400px">
+
+
 ## 1.3 備考
 + 差額の+αが貯まれば、みんなで鍋パやりたい
 
@@ -37,8 +40,13 @@
 + LINE MESSAGE API
 + LINE PAY API
 
+<img src="./img/network.png" width="500px" height="400px">
+
 # 3. 参考
 + https://www.npmjs.com/package/line-pay
+
+# 4. Please Test me
+<img src="./img/qr.png" width="600px" height="250px">
 
 ### おまけ
 + もしも、No thanksおさずに鯖更新した時は, switchのスコープコメントアウトして、以下を実行する
