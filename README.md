@@ -38,21 +38,21 @@ id item price
 + もしも、No thanksおさずに鯖更新した時は, switchのスコープコメントアウトして、以下を実行する
 ```
 // No thanks押し忘れた時用
-// const message = {
-// 	type: "template",
-// 	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
-// 	template: {
-// 		type: "confirm",
-// 		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
-// 		actions: [
-// 			{type: "postback", label: "Yes", data: "yes"},
-// 			{type: "postback", label: "No Thanks", data: "no"}
-// 		]
-// 	}
-// };
-// return bot.replyMessage(event.replyToken, message).then((response) => {
-// 	cache.put(event.source.userId, {
-// 		subscription: "inactive"
-// 	});
-// });
+const message = {
+	type: "template",
+	altText: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to puchase?",
+	template: {
+		type: "confirm",
+		text: "You need to purchase subscription to use this Chatbot. It's 1yen/month. Do you want to purchase?",
+		actions: [
+			{type: "postback", label: "Yes", data: "yes"},
+			{type: "postback", label: "No Thanks", data: "no"}
+		]
+	}
+};
+return bot.replyMessage(event.replyToken, message).then((response) => {
+	cache.put(event.source.userId, {
+		subscription: "inactive"
+	});
+});
 ```

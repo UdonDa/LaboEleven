@@ -88,6 +88,16 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							setSubscription(event.source.userId, "inactive");
 						});
 
+					} else if (/^新規/.test(text)) {
+						const [newItem, newPrice] = getNewItemAndPrice(text);
+						if (typeof newItem !== 'string' || typeof newPrice !== 'number') {
+							const message = getTextMessage(`新規　商品　値段　の順番で登録してください`);
+							return bot.replyMessage(event.replyToken, message);
+						}
+						const message = getNewConfirmMessage(newItem, newPrice);
+						return bot.replyMessage(event.replyToken, message).then((response) => {
+							setSubscription(event.source.userId, "inactive");
+						});
 					} else {
 						const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
 						return bot.replyMessage(event.replyToken, message);
@@ -139,6 +149,26 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						cache.del(event.source.userId);
 						return;
 					});
+				} else if (event.postback.data === "yes_new_enroll") {
+					const text = "ご登録ありがとうございます";
+					const [newItem, newPrice] = getNewItemAndPrice(text);
+					const items = Object.values(ITEM_NAME_TABLE);
+					ITEM_NAME_TABLE[items.length + 1] = newItem;
+					ITEM_TABLE[items.length + 1] = newPrice;
+					const textForLogs = `ID:${event.source.userId} WHEN:${getTodayTimestamp()} ITEM_ID:${items.length + 1}\n`;
+					fs.appendFileSync('logs_enrolled.txt', textForLogs, 'utf8');
+					const message = getTextMessage(text);
+					return bot.replyMessage(event.replyToken, message).then((response) => {
+						cache.del(event.source.userId);
+						return;
+					});
+				} else if (event.postback.data === "no_new_enroll") {
+					const text = "そっかーーー";
+					const message = getTextMessage(text);
+					return bot.replyMessage(event.replyToken, message).then((response) => {
+						cache.del(event.source.userId);
+						return;
+					});
 				}
 			}
 		}
@@ -146,13 +176,10 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 });
 
 server.get("/pay/confirm", (req, res, next) => {
-	console.log(req.query);
-
 	if (!req.query.transactionId) {
 		return res.status(400).send("Transaction Id not found.");
 	}
 	const reservation = cache.get(req.query.transactionId);
-	console.log(reservation);
 	if (!reservation) {
 		return res.status(400).send("Reservation not found.")
 	}
@@ -213,6 +240,21 @@ function getConfirmMessage(mode, itemNumber) {
 	}
 }
 
+function getNewConfirmMessage(item, price) {
+	return {
+		type: "template",
+		altText: `${item}を${price}円で新規登録しますか?`,
+		template: {
+			type: "confirm",
+			text: `${item}を${price}円で新規登録しますか?`,
+			actions: [
+				{type: "postback", label: "Yes", data: "yes_new_enroll"},
+				{type: "postback", label: "No Thanks", data: "no_new_enroll"}
+			]
+		}
+	}
+}
+
 function getReservationText(itemNumber, userId, hostName) {
 	return {
 		productName: ITEM_NAME_TABLE[itemNumber.toString()],
@@ -254,4 +296,11 @@ function setSubscription(userId, subscription) {
 	return cache.put(userId, {
 		subscription: subscription
 	});
+}
+
+function getNewItemAndPrice(text) {
+	const splitedText = text.split("　");
+	const newItem = splitedText[splitedText.length - 2];
+	const newPrice = splitedText[splitedText.length - 1];
+	return [newItem, parseInt(newPrice, 10)]
 }
