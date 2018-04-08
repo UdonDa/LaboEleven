@@ -1,7 +1,8 @@
-# POLハッカソン
+# LabEleven
 ~ ハッカソンでeslint使うやつまじで0人説 ~
+研究室にコンビニ導入したい！！
 
-# 要件定義
+# 概要
 
 ## 購入者
 1. LineBotに対して商品番号を送る（ex: ```購入 1```)
@@ -28,6 +29,16 @@
 
 ## 備考
 + 差額の+αが貯まれば、みんなで鍋パやりたい
+
+# 開発技術
++ Nodejs + express
++ herokuにdeploy
++ DBはMySQL
++ LINE MESSAGE API
++ LINE PAY API
+
+# 参考
++ https://www.npmjs.com/package/line-pay
 
 ### おまけ
 + もしも、No thanksおさずに鯖更新した時は, switchのスコープコメントアウトして、以下を実行する
