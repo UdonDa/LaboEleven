@@ -4,6 +4,15 @@ require("dotenv").config();
 const server = require("express")();
 const cache = require("memory-cache");
 const fs = require("fs");
+const mysql = require('mysql');
+const connection = mysql.createConnection({
+	host     : 'localhost',
+	user     : 'root',
+	database: 'labeleven'
+});
+
+//mysql
+connection.connect();
 
 //Line Pay API
 const linePay = require("line-pay");
@@ -24,6 +33,8 @@ const bot = new lineBot.Client(botConfig);
 server.listen(process.env.PORT || 5000);
 
 var ITEM_NUMBER = 0;
+var ITEM_NAME = '';
+var ITEM_PRICE = '';
 
 const ITEM_TABLE = {
 	1: 150,//おにぎり
@@ -90,6 +101,8 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 
 					} else if (/^新規/.test(text)) {
 						const [newItem, newPrice] = getNewItemAndPrice(text);
+						ITEM_NAME = newItem;
+						ITEM_PRICE = newPrice;
 						if (typeof newItem !== 'string' || typeof newPrice !== 'number') {
 							const message = getTextMessage(`新規　商品　値段　の順番で登録してください`);
 							return bot.replyMessage(event.replyToken, message);
@@ -99,12 +112,12 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 							setSubscription(event.source.userId, "inactive");
 						});
 					} else {
-						const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
+						const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます\n新規　商品　価格 : 商品を登録できます`);
 						return bot.replyMessage(event.replyToken, message);
 					}
 					break;
 				default:
-					const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます`);
+					const message = getTextMessage(`~使い方~\n一覧 : 取り扱い商品一覧が出てきます\n購入 N : N番の商品が買えます\n登録 N : N番の商品を登録できます\n新規　商品　価格 : 商品を登録できます`);
 					return bot.replyMessage(event.replyToken, message);
 					break;
 			}
@@ -150,14 +163,15 @@ server.post("/webhook", lineBot.middleware(botConfig), (req, res, next) => {
 						return;
 					});
 				} else if (event.postback.data === "yes_new_enroll") {
-					const text = "ご登録ありがとうございます";
-					const [newItem, newPrice] = getNewItemAndPrice(text);
+					const textMessage = event.message.text;
+					const [newItem, newPrice] = getNewItemAndPrice(textMessage);
 					const items = Object.values(ITEM_NAME_TABLE);
 					ITEM_NAME_TABLE[items.length + 1] = newItem;
 					ITEM_TABLE[items.length + 1] = newPrice;
 					const textForLogs = `ID:${event.source.userId} WHEN:${getTodayTimestamp()} ITEM_ID:${items.length + 1}\n`;
 					fs.appendFileSync('logs_enrolled.txt', textForLogs, 'utf8');
-					const message = getTextMessage(text);
+					const thanks = "ご登録ありがとうございます";
+					const message = getTextMessage(thanks);
 					return bot.replyMessage(event.replyToken, message).then((response) => {
 						cache.del(event.source.userId);
 						return;
